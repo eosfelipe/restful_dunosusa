@@ -36,8 +36,14 @@ class Sucursales_model extends CI_Model{
   public function set_data( $data ){
     foreach ($data as $nombre_campo => $valor_campo) {
       if( property_exists('Sucursales_model',$nombre_campo) ){
-        $this->nombre_campo = $valor_campo;
+        $this->$nombre_campo = $valor_campo;
       }
+
+      if($this->afiliacion == NULL) $this->afiliacion = "";
+      if($this->prefijo == NULL) $this->prefijo = "";
+      if($this->contrato_referencia == NULL) $this->contrato_referencia = "";
+      if($this->proveedor == NULL) $this->proveedor = "";
+
     }
 
     return $this;
