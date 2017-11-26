@@ -13,7 +13,7 @@ class Sucursales_model extends CI_Model{
   public $proveedor;
 
   public function get_sucursal( $centro ){
-    $this->db->where( array('centro'=>$centro) );
+    $this->db->where( array('centro'=>$centro,'contrato_referencia !='=>'baja') );
     $query = $this->db->get('sucursales');
 
     $row = $query->custom_row_object(0,'Sucursales_model');
@@ -50,10 +50,91 @@ class Sucursales_model extends CI_Model{
   }
 
   public function insert(){
-    return "insert";
+    //validar centro
+    $query = $this->db->get_where('sucursales',array('centro'=>$this->centro));
+    $sucursal_centro = $query->row();
+    if( isset($sucursal_centro )){
+      $respuesta = array(
+        'err'=>TRUE,
+        'mensaje'=>'El centro '.$data['centro'].' ya esta registrado'
+      );
+      return $respuesta;
+    }
+    // $sucursal = $this->Sucursales_model->set_data( $data );
+    $hecho = $this->db->insert( 'sucursales',$this );
+    if($hecho){
+      $respuesta = array(
+        'err'=>FALSE,
+        'mensaje'=>'Registro insertado correctamente',
+        'sucursal_id'=>$this->db->insert_id()
+      );
+    }else{
+      $respuesta = array(
+        'err'=>TRUE,
+        'mensaje'=>'Error al insertar',
+        'error'=>$this->db->_error_message(),
+        'error_num'=>$this->db->_error_number()
+      );
+    }
+    return $respuesta;
   }
 
   public function update(){
-    return "update";
+    //validar centro
+    $this->db->where( 'centro =',$this->centro );
+    // $this->db->where( 'id !=',$this->id );
+
+    $query = $this->db->get('sucursales');
+
+    $sucursal_centro = $query->row();
+    $this->id = $sucursal_centro->id;
+    // if( isset($sucursal_centro )){
+    //   $respuesta = array(
+    //     'err'=>TRUE,
+    //     'mensaje'=>'El centro '.$data['centro'].' ya esta registrado'
+    //   );
+    //   return $respuesta;
+    // }
+
+    $this->db->reset_query();
+    $this->db->where( 'id', $this->id );
+    $hecho = $this->db->update( 'sucursales',$this );
+    if($hecho){
+      $respuesta = array(
+        'err'=>FALSE,
+        'mensaje'=>'Registro actualizado correctamente',
+        'sucursal_id'=>$this->id
+      );
+    }else{
+      $respuesta = array(
+        'err'=>TRUE,
+        'mensaje'=>'Error al actualizar',
+        'error'=>$this->db->_error_message(),
+        'error_num'=>$this->db->_error_number()
+      );
+    }
+    return $respuesta;
+  }
+
+  public function delete( $sucursal_centro ){
+    $this->db->set('contrato_referencia','baja');
+    $this->db->where('centro',$sucursal_centro);
+    $hecho = $this->db->update('sucursales');
+
+    if($hecho){
+      //Borrado
+      $respuesta = array(
+        'err'=>FALSE,
+        'mensaje'=>'Registro eliminado correctamente'
+      );
+    }else{
+      $respuesta = array(
+        'err'=>TRUE,
+        'mensaje'=>'Error al borrar',
+        'error'=>$this->db->_error_message(),
+        'error_num'=>$this->db->_error_number()
+      );
+    }
+    return $respuesta;
   }
 }

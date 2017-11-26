@@ -78,41 +78,18 @@ class Sucursales extends REST_Controller {
     $this->form_validation->set_rules('prefijo','prefijo','trim|required|exact_length[2]');
 
     if( $this->form_validation->run() ){
-
-      $query = $this->db->get_where('sucursales',array('centro'=>$data['centro']));
-
-      $sucursal_centro = $query->row();
-
-      if( isset($sucursal_centro )){
-        $respuesta = array(
-          'err'=>TRUE,
-          'mensaje'=>'El centro '.$data['centro'].' ya esta registrado'
-        );
-        $this->response( $respuesta, REST_Controller::HTTP_BAD_REQUEST );
-        return;
-      }
-
+      //Todo bien
       $sucursal = $this->Sucursales_model->set_data( $data );
-      $hecho = $this->db->insert( 'sucursales',$sucursal );
+      $respuesta = $sucursal->insert();
 
-      if($hecho){
-        $respuesta = array(
-          'err'=>FALSE,
-          'mensaje'=>'Registro insertado correctamente',
-          'sucursal_id'=>$this->db->insert_id()
-        );
-        $this->response( $respuesta );
+      if( $respuesta['err'] ){
+        $this->response( $respuesta, REST_Controller::HTTP_BAD_REQUEST );
       }else{
-        $respuesta = array(
-          'err'=>TRUE,
-          'mensaje'=>'Error al insertar',
-          'error'=>$this->db->_error_message(),
-          'error_num'=>$this->db->_error_number()
-        );
-        $this->response( $respuesta, REST_Controller::HTTP_INTERNAL_SERVER_ERROR );
+        $this->response( $respuesta );
       }
 
     }else{
+      //Algo mal
       $respuesta = array(
         'err'=>TRUE,
         'mensaje'=>'Errores en el envío de información',
@@ -120,15 +97,49 @@ class Sucursales extends REST_Controller {
       );
       $this->response( $respuesta, REST_Controller::HTTP_BAD_REQUEST );
     }
-
-
-
-
-    // $this->response( $data );
-
   }
 
-  public function update(){
+  public function sucursal_post(){
+      $data = $this->post();
+      $sucursal_centro = $this->uri->segment(3);
+      $data['centro'] = $sucursal_centro;
+      $this->load->library('form_validation');
+      $this->form_validation->set_data( $data );
 
+      // $this->form_validation->set_rules('id','id sucursal','trim|required|integer');
+      $this->form_validation->set_rules('centro','centro','trim|required|exact_length[4]|integer');
+      $this->form_validation->set_rules('ip','ip','trim|valid_ip[ipv4]');
+      $this->form_validation->set_rules('nombre','nombre','trim');
+      $this->form_validation->set_rules('afiliacion','afiliación','trim|exact_length[7]');
+      $this->form_validation->set_rules('prefijo','prefijo','trim|exact_length[2]');
+
+      if( $this->form_validation->run() ){
+        //Todo bien
+        $sucursal = $this->Sucursales_model->set_data( $data );
+
+
+        $respuesta = $sucursal->update();
+
+        if( $respuesta['err'] ){
+          $this->response( $respuesta, REST_Controller::HTTP_BAD_REQUEST );
+        }else{
+          $this->response( $respuesta );
+        }
+
+      }else{
+        //Algo mal
+        $respuesta = array(
+          'err'=>TRUE,
+          'mensaje'=>'Errores en el envío de información',
+          'errores'=> $this->form_validation->get_errores_arreglo()
+        );
+        $this->response( $respuesta, REST_Controller::HTTP_BAD_REQUEST );
+      }
+    }
+
+    public function sucursal_delete(){
+      $sucursal_centro = $this->uri->segment(3);
+      $respuesta = $this->Sucursales_model->delete( $sucursal_centro );
+      $this->response( $respuesta );
+      }
   }
-}
