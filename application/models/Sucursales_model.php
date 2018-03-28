@@ -44,6 +44,8 @@ class Sucursales_model extends CI_Model{
       if($this->contrato_referencia == NULL) $this->contrato_referencia = "";
       if($this->proveedor == NULL) $this->proveedor = "";
 
+      $this->prefijo = strtoupper($this->prefijo); 
+
     }
 
     return $this;
@@ -87,14 +89,17 @@ class Sucursales_model extends CI_Model{
     $query = $this->db->get('sucursales');
 
     $sucursal_centro = $query->row();
+
+    if( !isset( $sucursal_centro )){
+      $respuesta = array(
+        'err'=>TRUE,
+        'mensaje'=>'El centro no existe'
+      );
+      return $respuesta;
+    }
+
     $this->id = $sucursal_centro->id;
-    // if( isset($sucursal_centro )){
-    //   $respuesta = array(
-    //     'err'=>TRUE,
-    //     'mensaje'=>'El centro '.$data['centro'].' ya esta registrado'
-    //   );
-    //   return $respuesta;
-    // }
+    
 
     $this->db->reset_query();
     $this->db->where( 'id', $this->id );

@@ -106,17 +106,16 @@ class Sucursales extends REST_Controller {
       $this->load->library('form_validation');
       $this->form_validation->set_data( $data );
 
-      // $this->form_validation->set_rules('id','id sucursal','trim|required|integer');
+      $this->form_validation->set_rules('id','id sucursal','trim|required|integer');
       $this->form_validation->set_rules('centro','centro','trim|required|exact_length[4]|integer');
       $this->form_validation->set_rules('ip','ip','trim|valid_ip[ipv4]');
-      $this->form_validation->set_rules('nombre','nombre','trim');
+      $this->form_validation->set_rules('nombre','nombre','trim|required');
       $this->form_validation->set_rules('afiliacion','afiliación','trim|exact_length[7]');
       $this->form_validation->set_rules('prefijo','prefijo','trim|exact_length[2]');
 
       if( $this->form_validation->run() ){
         //Todo bien
         $sucursal = $this->Sucursales_model->set_data( $data );
-
 
         $respuesta = $sucursal->update();
 
@@ -131,6 +130,7 @@ class Sucursales extends REST_Controller {
         $respuesta = array(
           'err'=>TRUE,
           'mensaje'=>'Errores en el envío de información',
+          'data'=>$data,
           'errores'=> $this->form_validation->get_errores_arreglo()
         );
         $this->response( $respuesta, REST_Controller::HTTP_BAD_REQUEST );
@@ -141,5 +141,9 @@ class Sucursales extends REST_Controller {
       $sucursal_centro = $this->uri->segment(3);
       $respuesta = $this->Sucursales_model->delete( $sucursal_centro );
       $this->response( $respuesta );
-      }
+    }
+
+    public function sucursal_options(){
+      $this->response(REST_Controller::HTTP_BAD_REQUEST);
+    }
   }
