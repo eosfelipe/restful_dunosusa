@@ -11,9 +11,10 @@ class Sucursales_model extends CI_Model{
   public $prefijo;
   public $contrato_referencia;
   public $proveedor;
+  public $estado;
 
   public function get_sucursal( $centro ){
-    $this->db->where( array('centro'=>$centro,'contrato_referencia !='=>'baja') );
+    $this->db->where( array('centro'=>$centro,'estado ='=>'1') );
     $query = $this->db->get('sucursales');
 
     $row = $query->custom_row_object(0,'Sucursales_model');
@@ -27,7 +28,7 @@ class Sucursales_model extends CI_Model{
   }
 
   public function get_sucursales(){
-    $this->db->where( array('contrato_referencia !='=>'baja') );
+    $this->db->where( array('estado ='=>'1') );
     $query = $this->db->get('sucursales');
 
     return $query;

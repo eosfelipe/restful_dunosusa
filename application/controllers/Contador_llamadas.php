@@ -12,6 +12,7 @@ class Contador_llamadas extends REST_Controller {
 
 	public function record_get(){
 		$ip=$_SERVER['REMOTE_ADDR'];
+		// $usuario=$_SESSION['usuario'];
 		if($this->uri->segment(3)){
 	      $respuesta = array(
 	        'err'=>TRUE,

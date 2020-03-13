@@ -143,7 +143,14 @@ class Sucursales extends REST_Controller {
       $this->response( $respuesta );
     }
 
-    public function sucursal_options(){
-      $this->response(REST_Controller::HTTP_BAD_REQUEST);
+    public function sucursales_options(){
+      // $this->response(REST_Controller::HTTP_BAD_REQUEST);
+      $respuesta = array(
+        'err'=>TRUE,
+        'mensaje'=>'Error al borrar',
+        'error'=>'error papu',
+        'error_num'=>404
+      );
+      $this->response($respuesta);
     }
   }

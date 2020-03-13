@@ -5,8 +5,12 @@ class Contador_llamadas_model extends CI_Model{
 
 	public $id;
 	public $centro;
+	public $tecnico_asignado;
+	public $titulo;
+	public $descripcion;
 	public $fecha_registro;
 	public $bandera;
+	public $usuario;
 	public $ip;
 
 	/*
@@ -33,9 +37,9 @@ class Contador_llamadas_model extends CI_Model{
 		'Yosepth'=>'10.32.5.111',
 		);
 
-	public function get_llamadas_usuario($ip){
+	public function get_llamadas_usuario($usuario){
 		$mes_actual = date('Y-m');
-		$this->db->where( array('ip'=>$ip) );
+		$this->db->where( array('ip'=>$usuario) );
 		$this->db->like('fecha_registro', $mes_actual);	    
 	    $this->db->from('contador_llamadas');
 	    $query = $this->db->count_all_results();
@@ -61,14 +65,14 @@ class Contador_llamadas_model extends CI_Model{
 		$meses = array();
 
 		for($i=1;$i<13;$i++){
-			$mes_actual = '2018-0'.$i;
+			$mes_actual = '2020-0'.$i;
 
 			if($i===10)
-				$mes_actual = '2018-'.$i;
+				$mes_actual = '2020-'.$i;
 			if($i===11)
-				$mes_actual = '2018-'.$i;
+				$mes_actual = '2020-'.$i;
 			if($i===12)
-				$mes_actual = '2017-'.$i;
+				$mes_actual = '2020-'.$i;
 		
 
 		$this->db->select('contador_llamadas.centro, sucursales.nombre, SUM(contador_llamadas.bandera) as total_llamadas', FALSE)
@@ -77,7 +81,7 @@ class Contador_llamadas_model extends CI_Model{
 						->like('contador_llamadas.fecha_registro', $mes_actual)
 						->group_by('contador_llamadas.centro')
 						->order_by('total_llamadas', 'DESC')
-						->limit(5);
+						->limit(10);
 
 		$query = $this->db->get();
 
@@ -102,9 +106,10 @@ class Contador_llamadas_model extends CI_Model{
 
 		$this->db->select('usuario.nombre, sum(contador_llamadas.bandera) as total_llamadas_mes', FALSE)
 						->from('contador_llamadas')
-						->join('usuario', 'usuario.ip = contador_llamadas.ip', 'inner')
+						->join('usuario', 'usuario.nombre = contador_llamadas.usuario', 'inner')
 						->like('contador_llamadas.fecha_registro', $mes_actual)
-						->group_by('contador_llamadas.ip')
+						#->group_by('contador_llamadas.ip')
+						->group_by('contador_llamadas.usuario')
 						->order_by('total_llamadas_mes', 'DESC');
 
 		$query = $this->db->get();
@@ -136,39 +141,54 @@ class Contador_llamadas_model extends CI_Model{
 		return $query;
 	}
 
+	private function count($min,$max){
+		$where = array('centro >' => $min, 'centro <' => $max, 'estado' => '1');
+		$query = $this->db->from('sucursales')->where($where)->count_all_results();
+		return $query;
+	}
+
 	public function get_sucursales(){
 		$yucatan;
 		$campeche;
 		$qroo;
-		$puebla;
 		$tabasco;
 		$chiapas;
 
-		$total;
-
 		$sucursales = array();
 
-		$total = $this->db->query('select count(*) as Total from sucursales where centro < 9000 and contrato_referencia!="baja"');
-		$yucatan = $this->db->query('select count(*) as Yucatan from sucursales where centro > 1000 and centro < 2000 and contrato_referencia!="baja"');
-		$campeche = $this->db->query('select count(*) as Campeche from sucursales where centro > 2000 and centro < 3000 and contrato_referencia!="baja"');
-		$qroo = $this->db->query('select count(*) as QRoo from sucursales where centro > 3000 and centro < 4000 and contrato_referencia!="baja"');
-		$puebla = $this->db->query('select count(*) as Puebla from sucursales where centro > 4000 and centro < 5000 and contrato_referencia!="baja"');
-		$tabasco = $this->db->query('select count(*) as Tabasco from sucursales where centro > 5000 and centro < 6000 and contrato_referencia!="baja"');
-		$chiapas = $this->db->query('select count(*) as Chiapas from sucursales where centro > 6000 and centro < 7000 and contrato_referencia!="baja"');
+		$yucatan = array(
+			'id'=>1000,
+			'zona'=>'Yucatán',
+			'numero'=>$this->count(1000,2000)
+		);
+		$campeche = array(
+			'id'=>2000,
+			'zona'=>'Campeche',
+			'numero'=>$this->count(2000,3000)
+		);
+		$qroo = array(
+			'id'=>3000,
+			'zona'=>'Quintana Roo',
+			'numero'=>$this->count(3000,4000)
+		);
+		$tabasco = array(
+			'id'=>5000,
+			'zona'=>'Tabasco',
+			'numero'=>$this->count(5000,6000)
+		);
+		$chiapas = array(
+			'id'=>6000,
+			'zona'=>'Chiapas',
+			'numero'=>$this->count(6000,7000)
+		);
 
-		if($yucatan){
-			array_push($sucursales, $total->result_array());
-			array_push($sucursales, $yucatan->result_array());
-			array_push($sucursales, $campeche->result_array());
-			array_push($sucursales, $qroo->result_array());
-			array_push($sucursales, $puebla->result_array());
-			array_push($sucursales, $tabasco->result_array());
-			array_push($sucursales, $chiapas->result_array());
+		array_push($sucursales, $yucatan);
+		array_push($sucursales, $campeche);
+		array_push($sucursales, $qroo);
+		array_push($sucursales, $tabasco);
+		array_push($sucursales, $chiapas);
 
-			return $sucursales;
-		}else{
-			return 'mal';
-		}
+		return $sucursales;
 	}
 
 }
